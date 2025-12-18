@@ -25,4 +25,8 @@ def Ordering(sort_by:str=Query(...,description='on what basisu wanna sort by : h
     if sort_by not in valid_teams:
         raise HTTPException(status_code=400,detail=f"enter btw {valid_teams}")
     if order not in ['asc' ,'desc']:
-        raise HTTPException(status_code=400,detail='only asc or desc allowed ')    
+        raise HTTPException(status_code=400,detail='only asc or desc allowed ')
+    data=load_json()  
+    sorting=True if order=='desc' else False  
+    sort=sorted(data.values(),key=lambda x : x.get(sort_by,0),reverse=sorting)
+    return sort
