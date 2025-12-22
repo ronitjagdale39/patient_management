@@ -2,12 +2,12 @@ from fastapi import FastAPI,HTTPException,Query
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 import json
-from schema import Patient
+from schema.schema import Patient
 
 app2=FastAPI()
 
     
-filename='patients.json'
+filename='/Users/rony/Documents/DJANGO/FastAPI/app2/files/patients.json'
 def save_data(data):
     with open(filename,'w') as f:
         json.dump(data,f)
@@ -43,7 +43,18 @@ def Create(patient:Patient):
         raise HTTPException(status_code=400,detail="The Patient already exists  in the database.")
     data[patient.id]=patient.model_dump(exclude={'id'})
     save_data(data)
-    return JSONResponse(status_code=201,content={
+    return JSONResponse(status_code=200,content={
         'message':'Data entered successfully '
     })
+@app2.delete('/delete')
+def Delete(patient_id :str ,patient:Patient):
+    data=load_json()
+    if patient_id in data:
+        del data[patient_id]
+        save_data(data)
+    else:
+        raise HTTPException(status_code=400,detail="particular id not has any entry")      
+    return JSONResponse(status_code=200,content={
+        'message':f"successfully deleted the details of {patient_id}"
+    })  
     
