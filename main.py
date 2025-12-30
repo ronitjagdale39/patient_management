@@ -2,7 +2,7 @@ from fastapi import FastAPI,HTTPException,Query
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 import json
-from schema.schema import Patient
+from schema.schema import Patient,PatientUpdate
 
 app2=FastAPI()
 
@@ -15,9 +15,10 @@ def load_json():
     with open(filename,'r') as f:
         data1=json.load(f)
         return data1
-@app2.get('/home')    
+@app2.get('/')    
 def home():
-    return "helloooo frndssss"
+    return {"Patient Management system"
+    }
 @app2.get('/patient/{patient_id}')
 def Show(patient_id:str):
     data=load_json()
@@ -46,6 +47,32 @@ def Create(patient:Patient):
     return JSONResponse(status_code=200,content={
         'message':'Data entered successfully '
     })
+@app2.put("/patientupdate/{patient_id}")
+def update_patient(patient_id: str, patient: PatientUpdate):
+    data = load_json()
+
+    if patient_id not in data:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    updates = patient.model_dump(
+    exclude_unset=True,
+    exclude_none=True
+    )
+
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields provided for update")
+
+   
+    for key, value in updates.items():
+        data[patient_id][key] = value
+
+    save_data(data)
+
+    return {
+        "message": "Patient updated successfully",
+        "patient_id": patient_id,
+        "updated_data": data[patient_id]
+    }
 @app2.delete('/delete')
 def Delete(patient_id :str ,patient:Patient):
     data=load_json()
